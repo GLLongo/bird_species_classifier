@@ -10,16 +10,28 @@ from zipfile import ZipFile
 #TODO
 #   experiment with different number of layers and activation functions etc
 #   create nice graphics for outputs, and look at different metrics
+#   results are very poor- probably overfitting, also probably because there are so many target categories
+#   maybe also put color filter in preporocessing step
+#   make dropout and preprocessing into params and run seeveral models using different techniques then we know what gives the best resutls
 
 def model(num_classes,img_height,img_width):
 
     model = Sequential([
-        layers.experimental.preprocessing.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
 
+        layers.experimental.preprocessing.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
+        # Data Augmentation
+        layers.experimental.preprocessing.RandomFlip("horizontal_and_vertical"),
+        layers.experimental.preprocessing.RandomRotation(0.2),
+
+        layers.Conv2D(16, 3, padding='same', activation='relu'),
+        layers.AveragePooling2D(),
+        layers.Dropout(0.05),
         layers.Conv2D(32, 3, padding='same', activation='relu'),
         layers.AveragePooling2D(),
+        layers.Dropout(0.1),
         layers.Conv2D(64, 3, padding='same', activation='relu'),
         layers.AveragePooling2D(),
+        layers.Dropout(0.2),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
         layers.Dense(num_classes)
@@ -41,7 +53,7 @@ def visualize_results(epochs):
     loss = history.history['loss']
     val_loss = history.history['val_loss']
 
-    with open('accuracy', 'w') as f:
+    with open("results_sept12", 'w') as f:
         print('test accuracies: {}'.format(acc), file=f)
         print('valid accuracies: {}'.format(val_acc), file=f)
 
